@@ -1,98 +1,160 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// app/index.tsx
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// Import Komponen Custom
+import { Card } from '../../components/ui/Card';
+import { GameBackground } from '../../components/ui/GameBackground';
+import { GoldBanner } from '../../components/ui/GoldBanner';
+import { useResponsive } from '../../hooks/useResponsive';
+import { fetchHeroes, HeroData } from '../../services/HeroService';
 
-export default function HomeScreen() {
+// Import Daftar 104 Kartu Valid
+import { DATASET_CARDS } from '../../constants/CardLists';
+
+// KATEGORI TAB (K-Means Clusters)
+const CATEGORIES = ['All', 'Cycle', 'Beatdown', 'Control', 'Siege', 'Bait'];
+
+export default function Home() {
+  const router = useRouter();
+  const { isDesktop } = useResponsive();
+  
+  // STATE DATA
+  const [heroes, setHeroes] = useState<HeroData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // STATE FILTER
+  const [activeTab, setActiveTab] = useState('All');
+  const [searchText, setSearchText] = useState('');
+
+  // 1. FETCH DATA SAAT APLIKASI DIBUKA
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      const allHeroes = await fetchHeroes(); // Mengambil 120 kartu dari API
+      
+      console.log("🔄 Fetching API...");
+      console.log("✅ API Response OK. Total kartu di API:", allHeroes.length);
+
+      // --- LOGIKA FILTER 104 KARTU ---
+      const validHeroes = allHeroes.filter(hero => {
+        // Normalisasi nama API (misal: "mini-pekka")
+        const normalizedApiKey = hero.key.toLowerCase().replace(/\./g, '').replace(/_/g, '-');
+        
+        // Cek apakah ada di DATASET_CARDS (kita bersihkan juga saat membandingkan)
+        return DATASET_CARDS.some(datasetName => {
+          const normalizedDatasetName = datasetName.toLowerCase().replace(/\./g, '').replace(/_/g, '-');
+          return normalizedApiKey === normalizedDatasetName;
+        });
+      }); 
+
+      setHeroes(validHeroes);
+      console.log(`📊 Filter Berhasil: Menampilkan ${validHeroes.length} kartu dari dataset.`);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  // LOGIC FILTERING (Search & Tabs)
+  const filteredHeroes = heroes.filter(hero => {
+    const matchesTab = activeTab === 'All' || hero.archetype === activeTab;
+    const matchesSearch = hero.name.toLowerCase().includes(searchText.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View className="flex-1 relative bg-[#0f172a]">
+      
+      {/* 1. BACKGROUND SVG */}
+      <GameBackground />
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <ScrollView className="flex-1" contentContainerClassName="pb-10">
+        
+        {/* === HEADER === */}
+        <View className="pt-12 pb-6 px-4 items-center">
+          <GoldBanner title="Clash Royale AI" />
+          <Text className="text-gray-300 text-xs mt-2 italic font-bold">
+            Powered by K-Means • KNN • Random Forest
+          </Text>
+        </View>
+
+        {/* === SECTION 1: SEARCH BAR === */}
+        <View className={`mx-6 mb-4 flex-row items-center bg-black/40 border border-white/20 rounded-full px-4 py-3 ${isDesktop ? 'w-1/2 self-center' : ''}`}>
+          <Ionicons name="search" size={20} color="#ccc" />
+          <TextInput 
+            className="flex-1 ml-3 text-white font-bold"
+            placeholder="Cari Hero (misal: P.E.K.K.A)..."
+            placeholderTextColor="#888"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+          {searchText.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchText('')}>
+              <Ionicons name="close-circle" size={20} color="#888" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* === SECTION 2: K-MEANS FILTER TABS === */}
+        <View className="mb-6">
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingHorizontal: 24 }}
+          >
+            
+          </ScrollView>
+        </View>
+
+        {/* === SECTION 3: HERO GRID (MAIN CONTENT) === */}
+        <View className={`mx-4 ${isDesktop ? 'px-20' : ''}`}>
+          <Text className="text-white font-bold text-lg mb-4 ml-2 border-l-4 border-yellow-500 pl-3">
+            Pilih Kartu Utama
+          </Text>
+
+          {loading ? (
+            <View className="mt-10 items-center">
+              <ActivityIndicator size="large" color="#ffd700" />
+              <Text className="text-white mt-2 font-bold">Mengambil Data Kartu...</Text>
+            </View>
+          ) : (
+            <View className="flex-row flex-wrap justify-between px-2">
+              {filteredHeroes.map((hero) => (
+                <TouchableOpacity 
+                  key={hero.key}
+                  onPress={() => router.push({
+                        pathname: "/dashboard",
+                        params: { hero: hero.key }
+                      })}
+                  className="w-[23%] mb-4 items-center" 
+                >
+                  <Card cardKey={hero.key} />
+                  
+                  {/* HAPUS ATAU KOMENTARI BAGIAN DI BAWAH INI:
+                      <View className="absolute top-0 right-0 bg-black/80 px-1 py-0.5 rounded border border-white/10">
+                        <Text className="text-[5px] text-yellow-400 font-bold uppercase">
+                            {hero.archetype}
+                        </Text>
+                      </View> 
+                  */}
+                  
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+        </View>
+
+      </ScrollView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
