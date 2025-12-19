@@ -1,51 +1,68 @@
-# Welcome to your Expo app 👋
+# 🏰 Clash Royale Deck Optimizer & Win Rate Predictor
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Scikit-Learn](https://img.shields.io/badge/Library-Scikit--Learn-orange)
+![Status](https://img.shields.io/badge/Status-Completed-success)
 
-## Get started
+> **A Hybrid Machine Learning System for Automating Competitive Deck Construction.**
 
-1. Install dependencies
+## 📖 Overview
+This project addresses the challenge of building optimal decks in the dynamic meta of **Clash Royale**. Instead of relying on manual trial-and-error, this system utilizes a **Hybrid Machine Learning** approach to analyze card synergies and predict deck performance.
 
-   ```bash
-   npm install
-   ```
+By integrating **K-Means Clustering**, **Random Forest Regression**, and **K-Nearest Neighbors (KNN)**, the system can recommend statistically balanced decks with high potential win rates based on a single starter card input.
 
-2. Start the app
+## 🚀 Key Features
+* [cite_start]**Card Role Clustering:** Automatically groups cards into functional roles (Win Condition, Tank, Spell, etc.) using K-Means[cite: 34].
+* [cite_start]**Win Rate Prediction:** Predicts the "Win/Loss" potential of a deck using a trained Random Forest model with >50% accuracy on unseen data[cite: 12].
+* [cite_start]**Smart Recommendation:** Suggests complementary cards based on feature similarity using KNN to maintain deck synergy[cite: 40].
+* [cite_start]**Meta-Valid Composition:** Ensures decks follow competitive rules (e.g., Must have 1 Win Condition, 1 Spell, Average Elixir 2.6 - 4.4)[cite: 494].
 
-   ```bash
-   npx expo start
-   ```
+## 🛠️ Technology Stack
+* [cite_start]**Language:** Python [cite: 200]
+* [cite_start]**Environment:** Google Colaboratory / Jupyter Notebook [cite: 203]
+* [cite_start]**Data Processing:** Pandas, NumPy [cite: 207, 210]
+* [cite_start]**Machine Learning:** Scikit-learn (Sklearn) [cite: 212]
+    * `StandardScaler` for Feature Normalization
+    * `KMeans` for Unsupervised Clustering
+    * `RandomForestRegressor` for Supervised Prediction
+    * `NearestNeighbors` for Recommendation Engine
 
-In the output, you'll find options to open the app in a
+## 🧠 Methodology (How it Works)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+The system operates through a 3-stage pipeline:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+1.  **Preprocessing & Clustering (K-Means):** Raw card data (Stats: HP, DPS, Cost) is normalized using `StandardScaler`. [cite_start]K-Means groups the 103 cards into **8 Clusters** representing roles (e.g., Tanks, Swarm, Spells)[cite: 261, 262].
 
-## Get a fresh project
+2.  **Evaluation Model (Random Forest):**
+    The model is trained on **5,000 simulated decks** with strict composition rules. It learns the relationship between card combinations and historical Win Rates. [cite_start]The model prioritizes features like *Average Elixir* and *Spell Count*[cite: 488, 529].
 
-When you're ready, run:
+3.  **Recommendation Engine (KNN):**
+    [cite_start]When a user inputs a card (e.g., "Goblins"), KNN searches for the best "neighbors" in the feature space to complete the deck, ensuring the final combination has a predicted Win Rate of >50%[cite: 538, 541].
 
-```bash
-npm run reset-project
-```
+## 📊 Results & Performance
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+* [cite_start]**Prediction Accuracy:** The Random Forest model demonstrates a positive linear correlation between predicted and actual win rates (Low MAE)[cite: 512, 549].
+* [cite_start]**Feature Importance:** Analysis reveals that **Average Elixir (~30%)** and **Spell Count** are the most critical factors for a winning deck[cite: 529].
+* **Case Study:** * *Input:* "Goblins"
+    * *Output Deck:* Electro Giant, Royal Hogs, Goblins, + Supports.
+    * [cite_start]*Predicted Win Rate:* **60.09%**[cite: 541, 554].
 
-## Learn more
+## 📂 Repository Structure
+├── data/ │ ├── clash_royale_cards.csv # Raw Dataset (103 Cards) │ └── synthetic_decks.csv # Training Data for Random Forest ├── notebooks/ │ └── Final_Project_Code.ipynb # Main Logic (Preprocessing, Training, Testing) ├── images/ # Graphs (Elbow Method, Scatter Plots) ├── requirements.txt # Python Dependencies └── README.md
 
-To learn more about developing your project with Expo, look at the following resources:
+## 👥 Authors
+[cite_start]**Faculty of Advanced Technology and Multidiscipline, Universitas Airlangga** [cite: 4]
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+* **Dimas Ardhani Putra**
+* **Achmad Akbar**
+* **Bagas Pamungkas**
+* **Haryo Seto Wicaksono**
 
-## Join the community
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](issues/).
 
-Join our community of developers creating universal apps.
+## 📜 License
+This project is for academic purposes as a Final Project.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-# clashroyaledeckanalyzer
+---
+*Note: This project uses a dataset of 103 cards and simulates meta interactions based on historical data snapshots.*
